@@ -1,0 +1,118 @@
+Metadata-Version: 2.2
+Name: aiXplain
+Version: 0.2.25
+Summary: aiXplain SDK adds AI functions to software.
+Author-email: thiago.ferreira@aixplain.com, krishna.durai@aixplain.com, lucas.pavanelli@aixplain.com
+License: Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Project-URL: Homepage, https://github.com/aixplain/aiXplain
+Project-URL: Documentation, https://github.com/aixplain/pipelines/tree/main/docs
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: <4,>=3.5
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.1.0
+Requires-Dist: tqdm>=4.1.0
+Requires-Dist: pandas>=1.2.1
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: validators>=0.20.0
+Requires-Dist: filetype>=1.2.0
+Requires-Dist: click>=7.1.2
+Requires-Dist: PyYAML>=6.0.1
+Requires-Dist: dataclasses-json>=0.5.2
+Requires-Dist: Jinja2==3.1.4
+Provides-Extra: model-builder
+Requires-Dist: model-interfaces~=0.0.1; extra == "model-builder"
+Provides-Extra: test
+Requires-Dist: pytest>=6.1.0; extra == "test"
+Requires-Dist: docker>=6.1.3; extra == "test"
+Requires-Dist: requests-mock>=1.11.0; extra == "test"
+
+<img src="docs/assets/aixplain-brandmark-line.png" alt="aiXplain logo" title="aiXplain" align="right" height="132" width="85"/>
+
+# aiXplain
+
+aixplain is a software development kit (SDK) for the [aiXplain](https://aixplain.com/) platform. With aixplain, developers can quickly and easily:
+
+- [Discover](https://aixplain.com/platform/discovery/) aiXplain’s ever-expanding catalog of 35,000+ ready-to-use AI models and utilize them.
+- [Benchmark](https://aixplain.com/platform/benchmark/) AI systems by choosing models, datasets and metrics.
+- [Design](https://aixplain.com/platform/studio/) their own custom pipelines and run them.
+- [FineTune](https://aixplain.com/platform/finetune/) pre-trained models by tuning them using your data, enhancing their performance.
+
+🔎 **Find [models](https://platform.aixplain.com/discovery/models), [datasets](https://platform.aixplain.com/discovery/datasets), [metrics](https://platform.aixplain.com/discovery/metrics) on the platform.**
+
+💛 Our repository is constantly evolving. With the help of the scientific community, we plan to add even more datasets, models, and metrics across domains and tasks.
+
+## Getting Started
+
+### Installation
+To install the base package, simply,
+```bash
+pip install aixplain
+```
+
+To  install aiXplain with additional model building support:
+```bash
+pip install aixplain[model-builder]
+```
+
+###  API Key Setup
+Before you can use the aixplain SDK, you'll need to obtain an API key from our platform. For details refer this [Team API Key Guide](docs/user/api_setup.md).
+
+Once you get the API key, you'll  need to add this API key as an environment variable on your system.
+
+#### Linux or macOS
+```bash
+export TEAM_API_KEY=YOUR_API_KEY
+```
+#### Windows
+```bash
+set TEAM_API_KEY=YOUR_API_KEY
+```
+#### Jupyter Notebook
+```
+%env TEAM_API_KEY=YOUR_API_KEY
+```
+
+### Usage
+
+Let’s see how we can use aixplain to run a machine translation model. The following example shows an [English to French translation model](https://platform.aixplain.com/discovery/model/61dc52976eb5634cf06e97cc).
+
+```python
+from aixplain.factories import ModelFactory
+model = ModelFactory.get("61dc52976eb5634cf06e97cc") # Get the ID of a model from our platform. 
+translation = model.run("This is a sample text") # Alternatively, you can input a public URL or provide a file path on your local machine.
+```
+*Check out the [explore section](docs/user/user_doc.md#explore) of our guide on Models to get the ID of your desired model*
+
+## Quick Links
+
+* [Team API Key Guide](docs/user/api_setup.md)
+* [User Documentation](docs/user/user_doc.md)
+* [Developer Guide](docs/development/developer_guide.md)
+* [API Reference](https://docs.aixplain.com)
+* [Release notes](https://github.com/aixplain/aiXplain/releases)
+
+## Support
+Raise issues for support in this repository.  
+Pull requests are welcome!
+
+## Note
+The **aiXtend** python package was renamed to **aiXplain** from the release v0.1.1.
