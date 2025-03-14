@@ -87,3 +87,70 @@ def generate_csv(base_folder, output_csv):
                                 created_date,
                             ]
                         )
+
+
+# File: resume_parser_project/config/label_config.py
+
+import json
+
+
+def load_flat_labels(json_path: str) -> dict[str, dict]:
+    """
+    Loads a flattened JSON containing both top-level section headings and sub-labels.
+    Returns a dictionary mapping every lowercased synonym -> metadata dict.
+
+    Example of returned dictionary structure:
+      {
+        "professional experience": {
+          "label_type": "SECTION_HEADING",
+          "canonical_label": "PROFESSIONAL EXPERIENCE",
+          "belongs_to": None
+        },
+        "work experience": {
+          "label_type": "SECTION_HEADING",
+          "canonical_label": "PROFESSIONAL EXPERIENCE",
+          "belongs_to": None
+        },
+        "career history": {
+          "label_type": "SECTION_HEADING",
+          "canonical_label": "PROFESSIONAL EXPERIENCE",
+          "belongs_to": None
+        },
+        "company line": {
+          "label_type": "SUB_LABEL",
+          "canonical_label": "Company Line",
+          "belongs_to": "PROFESSIONAL EXPERIENCE"
+        },
+        ...
+      }
+
+    :param json_path: Path to your flattened JSON file (e.g., headings_and_sublabels.json).
+    :return: A dict where keys are synonyms (lowercase), and values are dictionaries with metadata.
+    """
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    flat_map: dict[str, dict] = {}
+
+    for entry in data["labels"]:
+        label_type = entry["label_type"]
+        canonical_label = entry["canonical_label"]
+        synonyms = entry.get("synonyms", [])
+        belongs_to = entry.get("belongs_to", None)  # For sub-labels only
+
+        # Map the canonical label itself
+        flat_map[canonical_label.lower()] = {
+            "label_type": label_type,
+            "canonical_label": canonical_label,
+            "belongs_to": belongs_to,
+        }
+
+        # Map each synonym
+        for syn in synonyms:
+            flat_map[syn.lower()] = {
+                "label_type": label_type,
+                "canonical_label": canonical_label,
+                "belongs_to": belongs_to,
+            }
+
+    return flat_map

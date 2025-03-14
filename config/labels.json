@@ -1,0 +1,38 @@
+{
+    "labels": [
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "PROFESSIONAL EXPERIENCE",
+        "synonyms": ["Work Experience", "Career History"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "PROFESSIONAL EXPERIENCE",
+        "canonical_label": "Company Line",
+        "synonyms": ["Employer line", "Org line"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "PROFESSIONAL EXPERIENCE",
+        "canonical_label": "Job Description",
+        "synonyms": ["Responsibilities", "Work tasks"]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "TECHNICAL SKILLS",
+        "synonyms": ["Skills", "Tech Skills"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "TECHNICAL SKILLS",
+        "canonical_label": "Programming Languages",
+        "synonyms": ["Languages", "Coding languages"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "TECHNICAL SKILLS",
+        "canonical_label": "Machine Learning",
+        "synonyms": ["ML Tools", "ML Frameworks"]
+      }
+    ]
+  }
