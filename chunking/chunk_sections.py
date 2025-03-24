@@ -30,6 +30,9 @@ def parse_into_lines(resume_text: str) -> list[str]:
     #  - "Page 1 of 2"
     #  - "Some text Page   2  of   5 something"
     #  - "Page  of 12"
+    print("\n----- START OF CHUNK -----")
+    print(resume_text)
+    print("------ END OF CHUNK ------\n")
     header_footer_pattern = re.compile(r"(?i).*page.*of.*\d+.*")
 
     def is_header_or_footer(line: str) -> bool:
@@ -49,7 +52,11 @@ def parse_into_lines(resume_text: str) -> list[str]:
     # 3. Skip lines recognized as headers/footers
     filtered_lines = [line for line in stripped_lines if not is_header_or_footer(line)]
 
+    normalize_space_lines = normalize_spaces(filtered_lines)
+    merge_lines = chunk_merge(normalize_space_lines)
+
     return filtered_lines
+    return merge_lines
 
 
 def extract_name_and_contact_info(lines: list[str]) -> tuple[str, str, list[str]]:
@@ -186,3 +193,79 @@ def chunk_sections_by_headings(lines: list[str]) -> dict[str, str]:
         sections[current_heading] = "\n".join(chunk_buffer).strip()
 
     return sections
+
+
+def chunk_merge(lines):
+    """
+    Merge consecutive lines in 'lines' based on the following rules:
+      1. Identify the longest line length (stripped).
+      2. For two consecutive lines (line1, line2):
+         a) If line2 does not start with a bullet or indentation, and
+         b) The number of trailing spaces in line1 (relative to longest line)
+            is less than the length of the first word in line2,
+         => Merge line1 and line2 into one line.
+    """
+    if not lines:
+        return []
+
+    # Calculate the max length of the lines (ignoring trailing whitespace).
+    max_len = max(len(line.rstrip()) for line in lines)
+
+    merged_lines = []
+    skip_next = False
+
+    for i in range(len(lines) - 1):
+        if skip_next:
+            # If we've already merged line i with line i+1, skip i+1 in the loop
+            skip_next = False
+            continue
+
+        line1 = lines[i]
+        line2 = lines[i + 1]
+
+        # Check if line2 starts with bullet or indentation
+        if re.match(r"^\s+", line2) or re.match(r"^\s*([-*+•]|\d+\.)", line2):
+            # If it does, just keep line1 as is
+            merged_lines.append(line1)
+        else:
+            # Calculate "trailing space" difference for line1
+            trailing_spaces = max_len - len(line1.rstrip())
+
+            # Extract the first word of line2
+            match = re.match(r"^\s*(\S+)", line2)
+            first_word_length = len(match.group(1)) if match else 0
+
+            # Decide if merging is needed
+            if trailing_spaces < first_word_length:
+                # Merge line1 and line2
+                new_line = line1.rstrip() + " " + line2.lstrip()
+                merged_lines.append(new_line)
+                skip_next = True  # Skip adding line2 separately
+            else:
+                # Otherwise, leave them separate
+                merged_lines.append(line1)
+
+    # Handle the last line if it wasn't merged
+    if not skip_next:
+        merged_lines.append(lines[-1])
+
+    return merged_lines
+
+
+def normalize_spaces(lines: list[str]) -> list[str]:
+    """
+    Converts any sequence of 2 or more consecutive spaces
+    into a single space, for each line in 'lines'.
+
+    :param lines: List of lines after chunk merging (where we no longer need spacing data).
+    :return: A new list of lines with spurious spaces removed.
+    """
+    normalized = []
+    for line in lines:
+        # Convert multiple spaces into 1
+        # You could also consider tabs, etc.
+        line_clean = re.sub(r"\s{2,}", " ", line)
+        # Optionally trim again if you want
+        line_clean = line_clean.strip()
+        normalized.append(line_clean)
+    return normalized

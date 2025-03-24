@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 import PyPDF2
 import docx
+import pypdf
 
 
 def read_txt(file_path):
@@ -15,9 +16,11 @@ def read_pdf(file_path):
     """Extracts text from a PDF file using PyPDF2, returns string content."""
     text = []
     with open(file_path, "rb") as f:
-        reader = PyPDF2.PdfReader(f)
+        reader = pypdf.PdfReader(f)
         for page in reader.pages:
-            page_text = page.extract_text()
+            page_text = page.extract_text(
+                extraction_mode="layout", layout_mode_space_vertically=False
+            )
             if page_text:
                 text.append(page_text)
     return "\n".join(text)
