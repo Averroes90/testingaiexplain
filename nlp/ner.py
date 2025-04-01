@@ -3,7 +3,7 @@
 from transformers import pipeline
 
 
-def load_ner_model(model_name: str = "dslim/bert-base-NER"):
+def load_ner_model(model_name: str = "xlm-roberta-large-finetuned-conll03-english"):
     """
     Loads a Named Entity Recognition (NER) model using the Hugging Face transformers library.
     Defaults to the 'dslim/bert-base-NER' model, which is well-known for NER tasks.
@@ -14,7 +14,9 @@ def load_ner_model(model_name: str = "dslim/bert-base-NER"):
     """
     # aggregation_strategy="simple" merges wordpieces into single entities
     ner_pipeline = pipeline(
-        "token-classification", model=model_name, aggregation_strategy="simple"
+        "token-classification",
+        model=model_name,
+        aggregation_strategy="simple",
     )
     return ner_pipeline
 
@@ -50,3 +52,29 @@ def run_ner_on_chunks(chunks: list[str], ner_pipeline) -> list[dict]:
         results.append({"chunk": chunk, "entities": entities})
 
     return results
+
+
+def extract_ner(text: str, ner_pipeline=None) -> list[dict]:
+    """
+    Extracts named entities from a line using the given NER pipeline.
+
+    :param text: The input text line.
+    :param ner_pipeline: A Hugging Face token-classification pipeline (NER).
+    :return: A list of dicts representing named entities with label, text, and score.
+    """
+    if ner_pipeline is None:
+        ner_pipeline = load_ner_model()
+    try:
+        entities = ner_pipeline(text)
+        results = [
+            {
+                "text": ent["word"],
+                "label": ent["entity_group"],
+                "score": round(ent["score"], 4),
+            }
+            for ent in entities
+        ]
+        return results
+    except Exception as e:
+        # In case of pipeline or model error, return empty list
+        return []

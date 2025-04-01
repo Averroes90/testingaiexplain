@@ -1,5 +1,9 @@
 import re
+
+from networkx import tree_graph
 import utils
+from nlp.zsc import classify_line_zsc, load_zsc_model
+from nlp.ner import extract_ner, load_ner_model
 
 
 def load_secction_headings() -> dict[str, str]:
@@ -53,10 +57,9 @@ def parse_into_lines(resume_text: str) -> list[str]:
     filtered_lines = [line for line in stripped_lines if not is_header_or_footer(line)]
 
     normalize_space_lines = normalize_spaces(filtered_lines)
-    merge_lines = chunk_merge(normalize_space_lines)
-
-    return filtered_lines
-    return merge_lines
+    # merge_lines = chunk_merge(normalize_space_lines, nlp)
+    # return normalize_space_lines
+    return normalize_space_lines
 
 
 def extract_name_and_contact_info(lines: list[str]) -> tuple[str, str, list[str]]:
@@ -195,61 +198,36 @@ def chunk_sections_by_headings(lines: list[str]) -> dict[str, str]:
     return sections
 
 
-def chunk_merge(lines):
+def chunk_merge(lines: list[str], nlp) -> list[str]:
     """
-    Merge consecutive lines in 'lines' based on the following rules:
-      1. Identify the longest line length (stripped).
-      2. For two consecutive lines (line1, line2):
-         a) If line2 does not start with a bullet or indentation, and
-         b) The number of trailing spaces in line1 (relative to longest line)
-            is less than the length of the first word in line2,
-         => Merge line1 and line2 into one line.
+    Merges lines that are semantically or structurally part of the same chunk.
+
+    :param lines: A list of input lines (strings) from a resume, essay, etc.
+    :param nlp: A loaded stanza.Pipeline instance with constituency parsing enabled.
+    :return: A list of merged chunks (strings).
     """
     if not lines:
         return []
 
-    # Calculate the max length of the lines (ignoring trailing whitespace).
-    max_len = max(len(line.rstrip()) for line in lines)
+    max_line_length = max(len(line) for line in lines)
+    merged_chunks = []
 
-    merged_lines = []
-    skip_next = False
+    i = 0
+    while i < len(lines):
+        current_chunk = lines[i].strip()
+        j = i + 1
 
-    for i in range(len(lines) - 1):
-        if skip_next:
-            # If we've already merged line i with line i+1, skip i+1 in the loop
-            skip_next = False
-            continue
+        # Keep trying to merge forward as long as it's valid
+        while j < len(lines) and should_merge(
+            current_chunk, lines[j], max_line_length, nlp
+        ):
+            current_chunk = current_chunk + " " + lines[j].strip()
+            j += 1
 
-        line1 = lines[i]
-        line2 = lines[i + 1]
+        merged_chunks.append(current_chunk)
+        i = j  # Move pointer forward to the next unprocessed line
 
-        # Check if line2 starts with bullet or indentation
-        if re.match(r"^\s+", line2) or re.match(r"^\s*([-*+•]|\d+\.)", line2):
-            # If it does, just keep line1 as is
-            merged_lines.append(line1)
-        else:
-            # Calculate "trailing space" difference for line1
-            trailing_spaces = max_len - len(line1.rstrip())
-
-            # Extract the first word of line2
-            match = re.match(r"^\s*(\S+)", line2)
-            first_word_length = len(match.group(1)) if match else 0
-
-            # Decide if merging is needed
-            if trailing_spaces < first_word_length:
-                # Merge line1 and line2
-                new_line = line1.rstrip() + " " + line2.lstrip()
-                merged_lines.append(new_line)
-                skip_next = True  # Skip adding line2 separately
-            else:
-                # Otherwise, leave them separate
-                merged_lines.append(line1)
-
-    # Handle the last line if it wasn't merged
-    if not skip_next:
-        merged_lines.append(lines[-1])
-
-    return merged_lines
+    return merged_chunks
 
 
 def normalize_spaces(lines: list[str]) -> list[str]:
@@ -269,3 +247,249 @@ def normalize_spaces(lines: list[str]) -> list[str]:
         line_clean = line_clean.strip()
         normalized.append(line_clean)
     return normalized
+
+
+BULLET_REGEX_ANYWHERE = re.compile(r"(?<!\w)[\u2022\*\+\-‣▪∙‾·](?!\w)")
+
+
+def contains_bullet(text: str) -> bool:
+    """
+    Returns True if the line contains a bullet-like symbol,
+    but ignores hyphens inside words (e.g., 'hands-on').
+    """
+    return bool(BULLET_REGEX_ANYWHERE.search(text))
+
+
+CONTACT_PATTERNS = [
+    r"\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b",  # Email
+    r"\b(?:https?:\/\/)?(?:www\.)?\w+\.\w{2,}(\/\S*)?\b",  # URLs/domains
+    r"\b(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?){2}\d{4}\b",  # Phone numbers
+    r"\blinkedin\.com\/\S+\b",  # LinkedIn
+    r"\bgithub\.com\/\S+\b",  # GitHub
+    r"\btwitter\.com\/\S+\b",  # Twitter
+    r"@\w{2,}",  # Handles
+]
+
+contact_info_regex = re.compile("|".join(CONTACT_PATTERNS), re.IGNORECASE)
+
+
+def contains_contact_info(text: str) -> bool:
+    """
+    Returns True if the text contains email, URL, phone number,
+    or common social profile/contact indicators.
+    """
+    return bool(contact_info_regex.search(text))
+
+
+def is_visually_separated(
+    line_a: str, line_b: str, max_line_length: int, gap_ratio: float = 0.15
+) -> bool:
+    """
+    Returns True if line_a ends with a large visual gap, and line_b begins with a short word,
+    suggesting visual separation in layout (e.g., like justified resume formats).
+
+    :param line_a: The first line to evaluate (typically the current line).
+    :param line_b: The following line.
+    :param max_line_length: The length of the longest line in the document.
+    :param gap_ratio: The threshold proportion of visual gap (e.g., 0.15 = 15% of max).
+    """
+    line_a = line_a.rstrip()
+    visual_gap = max_line_length - len(line_a)
+
+    # Extract first word of line B
+    first_word_length = len(line_b.strip().split()[0]) if line_b.strip() else 0
+
+    # If visual gap at end of A is greater than first word of B and exceeds ratio
+    return visual_gap > first_word_length and visual_gap / max_line_length >= gap_ratio
+
+
+CONJUNCTIONS = {
+    "and",
+    "or",
+    "but",
+    "so",
+    "yet",
+    "because",
+    "although",
+    "though",
+    "while",
+    "nor",
+    "for",
+    "with",
+    "as",
+    "if",
+    "when",
+    "after",
+    "before",
+    "until",
+    "to",
+    "from",
+    "however",
+    "moreover",
+    "furthermore",
+    "therefore",
+    "thus",
+    "meanwhile",
+    "additionally",
+    "also",
+    "besides",
+    "then",
+}
+
+
+def ends_with_conjunction(text: str) -> bool:
+    """
+    Returns True if the last word in the text is a conjunction, suggesting continuation.
+    """
+    words = text.strip().lower().rstrip(".").split()
+    return bool(words) and words[-1] in CONJUNCTIONS
+
+
+def starts_with_conjunction(text: str) -> bool:
+    """
+    Returns True if the first word in the text is a conjunction, suggesting it might be a continuation.
+    """
+    words = text.strip().lower().split()
+    return bool(words) and words[0] in CONJUNCTIONS
+
+
+def is_merged_grammatical(text: str, nlp) -> bool:
+    """
+    Checks whether the merged text is a grammatically valid sentence,
+    allowing an initial bullet (NFP), but rejecting other structural noise.
+    """
+    try:
+        doc = nlp(text)
+        if not doc.sentences:
+            return False
+
+        for sent in doc.sentences:
+            if not sent.constituency:
+                continue
+
+            tree_str = str(sent.constituency).strip()
+
+            # Ensure top-level structure is a sentence
+            if (
+                not tree_str.startswith("(ROOT (S")
+                and not tree_str.startswith("(ROOT (SINV")
+                and not tree_str.startswith("(ROOT (SBAR")
+            ):
+                # If not a sentence root, and sentence is embedded inside a noun phrase, reject
+                if re.search(r"\(NP\s+\(S[\s\)]", tree_str):
+                    return False
+
+            # ✅ ALLOW: One NFP at very beginning of tree (before any words)
+            # ❌ REJECT: Any NFP/ADD/EMAIL/URL that appears later
+            nfp_index = tree_str.find("NFP")
+            if nfp_index != -1:
+                # Check if it's the very first non-whitespace thing (root allowance)
+                first_occurrence = re.search(r"\(NFP\b", tree_str)
+                if first_occurrence and first_occurrence.start() > 30:  # ROOT + (S ...)
+                    return False  # NFP not at the start
+
+            # Block structural noise elsewhere
+            if any(tag in tree_str for tag in ["ADD", "EMAIL", "URL"]):
+                return False
+
+        return True
+
+    except Exception:
+        return False
+
+
+def should_merge(line_a: str, line_b: str, max_line_length: int, nlp) -> bool:
+    grammaticaly_complete = False
+    if contains_bullet(line_b) or contains_contact_info(line_b):
+        # print("contains_bullet(line_b) or contains_contact_info(line_b):")
+        # print(f"line b {line_b}")
+        return False
+    if contains_contact_info(line_a):
+        print("contains_contact_info)")
+        print(f"line a {line_a}")
+        return False
+    if is_visually_separated(line_a, line_b, max_line_length):
+        print("is_visually_separated")
+        print(f"line a {line_a}")
+        print(f"line b {line_b}")
+        print(f"max length {max_line_length}")
+        return False
+
+    if ends_with_conjunction(line_a) or starts_with_conjunction(line_b):
+        return True
+
+    # if is_merged_grammatical(line_a + " " + line_b, nlp):
+    #     return True
+    # else:
+    #     print(f"not grammatical {line_a} {line_b}")
+
+    return False
+
+
+zsc_pipeline = load_zsc_model()
+ner_pipeline = load_ner_model()
+
+
+def generate_line_features(lines):
+    max_line_length = max(len(line) for line in lines)
+    table = []
+
+    for i, line in enumerate(lines):
+        next_line = lines[i + 1] if i + 1 < len(lines) else ""
+        zsc_results = classify_line_zsc(line, zsc_pipeline)
+        top_zsc = extract_top_zsc_label(zsc_results)
+        features = {
+            "line": line,
+            "is_visually_separated": is_visually_separated(
+                line, next_line, max_line_length
+            ),
+            "contains_bullet": contains_bullet(line),
+            "contains_contact_info": contains_contact_info(line),
+            "ends_with_conjunction": ends_with_conjunction(line),
+            "starts_with_conjunction": starts_with_conjunction(line),
+            "zero_shot_classification": top_zsc,  # Returns label or top score label
+            "named_entity_recognition": extract_ner(
+                line, ner_pipeline
+            ),  # Returns list of entities or label spans
+            "is_section_header": matching_section_header(
+                line
+            ),  # Could be rule or zsc-based
+        }
+
+        table.append(features)
+
+    return table
+
+
+def matching_section_header(line: str) -> str | None:
+    """
+    Checks if the line matches any section header label or synonym.
+
+    :param line: The text line to evaluate.
+    :return: The canonical label if matched; otherwise, None.
+    """
+    headings_json_path = "config/labels.json"
+    flat_map = utils.load_flat_labels(headings_json_path)
+
+    normalized_line = line.strip().lower()
+
+    # Check if the line matches any label or synonym
+    if normalized_line in flat_map:
+        return flat_map[normalized_line]["canonical_label"]
+
+    return None
+
+
+def extract_top_zsc_label(
+    zsc_results: list[dict[str, float]],
+) -> dict[str, float | None]:
+    """
+    Extracts the top label and its score from the full zero-shot classification result.
+
+    :param zsc_results: Output from classify_line_zsc(), a sorted list of dicts.
+    :return: Dict with keys 'label' and 'score'. None values if input is empty.
+    """
+    if zsc_results:
+        return {"label": zsc_results[0]["label"], "score": zsc_results[0]["score"]}
+    else:
+        return {"label": None, "score": None}

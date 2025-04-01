@@ -13,26 +13,48 @@
       },
       {
         "label_type": "SUB_LABEL",
+        "canonical_label": "JOB TITLE",
         "belongs_to": "PROFESSIONAL EXPERIENCE",
-        "canonical_label": "Job Description",
-        "synonyms": ["Responsibilities", "Work tasks"]
+        "synonyms": ["Title", "Position"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "PROFESSIONAL EXPERIENCE",
+        "canonical_label": "Responsibilities",
+        "synonyms": ["Work tasks","accomplishments"]
       },
       {
         "label_type": "SECTION_HEADING",
         "canonical_label": "TECHNICAL SKILLS",
-        "synonyms": ["Skills", "Tech Skills","TECHNICAL SKILLS"]
+        "synonyms": ["Skills", "Tech Skills"]
       },
       {
         "label_type": "SUB_LABEL",
         "belongs_to": "TECHNICAL SKILLS",
         "canonical_label": "Programming Languages",
-        "synonyms": ["Languages", "Coding languages"]
+        "synonyms": ["Coding languages"]
       },
       {
         "label_type": "SUB_LABEL",
         "belongs_to": "TECHNICAL SKILLS",
         "canonical_label": "Machine Learning",
         "synonyms": ["ML Tools", "ML Frameworks"]
+      },      
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "SUMMARY",
+        "synonyms": [ "Overview","Abrtract","Profile"]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "belongs_to": "Education",
+        "canonical_label": "School",
+        "synonyms": ["University", "College", "Institution"]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "Education",
+        "synonyms": ["Academics", "Educational Background", "Studies"]
       }
     ]
   }

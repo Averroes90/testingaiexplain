@@ -19,7 +19,7 @@ def read_pdf(file_path):
         reader = pypdf.PdfReader(f)
         for page in reader.pages:
             page_text = page.extract_text(
-                extraction_mode="layout", layout_mode_space_vertically=False
+                extraction_mode="layout", layout_mode_space_vertically=True
             )
             if page_text:
                 text.append(page_text)
@@ -29,8 +29,21 @@ def read_pdf(file_path):
 def read_docx_file(file_path):
     """Extracts text from a .docx file using python-docx, returns string content."""
     doc = docx.Document(file_path)
-    paragraphs = [para.text for para in doc.paragraphs]
-    return "\n".join(paragraphs)
+    full_text = []
+    # Extract from top-level paragraphs
+    for para in doc.paragraphs:
+        if para.text.strip():
+            full_text.append(para.text)
+
+    # Extract text from tables
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                text = cell.text.strip()
+                if text:
+                    full_text.append(text)
+
+    return "\n".join(full_text)
 
 
 def extract_text(file_path):
