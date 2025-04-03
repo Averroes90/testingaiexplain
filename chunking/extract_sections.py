@@ -43,10 +43,10 @@ def parse_resume_sections(parsed_lines):
     education, parsed_lines = parse_education(parsed_lines)
 
     # 6. Technical Projects
-    technical_projects = parse_technical_projects(parsed_lines)
+    technical_projects, parsed_lines = parse_technical_projects(parsed_lines)
 
     # 7. Additional Information
-    additional_information = parse_additional_information(parsed_lines)
+    additional_information, parsed_lines = parse_additional_information(parsed_lines)
 
     # 8. Everything Else / Fallback
     other = parse_other_sections(parsed_lines)
