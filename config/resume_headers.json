@@ -1,0 +1,49 @@
+{
+    "labels": [
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "PROFESSIONAL EXPERIENCE",
+        "synonyms": [
+          "Work Experience",
+          "Employment History",
+          "Career History"
+        ]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "EDUCATION",
+        "synonyms": [
+          "Academic Background",
+          "Educational Qualifications",
+          "Education History"
+        ]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "TECHNICAL SKILLS",
+        "synonyms": [
+          "Skills",
+          "Technical Proficiencies",
+          "Technologies"
+        ]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "SELECTED TECHNICAL PROJECTS",
+        "synonyms": [
+          "Technical Projects",
+          "Projects",
+          "Engineering Projects"
+        ]
+      },
+      {
+        "label_type": "SECTION_HEADING",
+        "canonical_label": "ADDITIONAL INFORMATION & PROFESSIONAL DEVELOPMENT",
+        "synonyms": [
+          "Additional Information",
+          "Professional Development",
+          "Certifications and Training"
+        ]
+      }
+    ]
+  }

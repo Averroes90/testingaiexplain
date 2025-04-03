@@ -64,14 +64,14 @@ def merge_line_chunks(lines_with_features: list[dict], nlp=nlp) -> list[str]:
             # Rule 6: only company line or school in first or next line
             if (
                 prev_line["zero_shot_classification"]["label"]
-                in ["Company Line", "School"]
+                in ["COMPANY LINE", "EDUCATION"]
                 and any(
                     ent["label"] == "ORG"
                     for ent in prev_line["named_entity_recognition"]
                 )
             ) or (
                 next_line["zero_shot_classification"]["label"]
-                in ["Company Line", "School"]
+                in ["COMPANY LINE", "EDUCATION"]
                 and any(
                     ent["label"] == "ORG"
                     for ent in next_line["named_entity_recognition"]
@@ -85,17 +85,8 @@ def merge_line_chunks(lines_with_features: list[dict], nlp=nlp) -> list[str]:
             ):
                 break
 
-            # Rule 8: No explicit "do not merge" triggered — test merged chunk with grammar check
-            tentative_chunk = " ".join(
-                current_chunk_lines + [next_line["line"].strip()]
-            )
-            # if is_merged_grammatical(tentative_chunk, nlp):
             current_chunk_lines.append(next_line["line"].strip())
             j += 1
-            # continue  # stop here and finalize chunk
-            # else:
-            # print(f"is not grammatical ......{tentative_chunk}")
-            # break  # grammar failed → do not merge next line
 
         # Rule 6 (part b): if chunk has 2+ lines and we hit a stop rule, validate grammatically
         while len(current_chunk_lines) > 1 and not is_merged_grammatical(

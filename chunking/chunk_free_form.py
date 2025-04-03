@@ -34,7 +34,7 @@ def split_into_sentences(full_text: str) -> list[str]:
     return [sent.text for sent in doc.sents]
 
 
-def embed_sentences(sentences: list[str]) -> list[np.ndarray]:
+def embed_sentences(sentences: list[str], model=model) -> list[np.ndarray]:
     """
     Embeds each sentence into a dense vector representation using a Transformer model.
 

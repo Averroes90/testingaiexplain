@@ -198,38 +198,6 @@ def chunk_sections_by_headings(lines: list[str]) -> dict[str, str]:
     return sections
 
 
-def chunk_merge(lines: list[str], nlp) -> list[str]:
-    """
-    Merges lines that are semantically or structurally part of the same chunk.
-
-    :param lines: A list of input lines (strings) from a resume, essay, etc.
-    :param nlp: A loaded stanza.Pipeline instance with constituency parsing enabled.
-    :return: A list of merged chunks (strings).
-    """
-    if not lines:
-        return []
-
-    max_line_length = max(len(line) for line in lines)
-    merged_chunks = []
-
-    i = 0
-    while i < len(lines):
-        current_chunk = lines[i].strip()
-        j = i + 1
-
-        # Keep trying to merge forward as long as it's valid
-        while j < len(lines) and should_merge(
-            current_chunk, lines[j], max_line_length, nlp
-        ):
-            current_chunk = current_chunk + " " + lines[j].strip()
-            j += 1
-
-        merged_chunks.append(current_chunk)
-        i = j  # Move pointer forward to the next unprocessed line
-
-    return merged_chunks
-
-
 def normalize_spaces(lines: list[str]) -> list[str]:
     """
     Converts any sequence of 2 or more consecutive spaces
@@ -334,6 +302,8 @@ CONJUNCTIONS = {
     "also",
     "besides",
     "then",
+    "in",
+    "on",
 }
 
 
@@ -353,77 +323,49 @@ def starts_with_conjunction(text: str) -> bool:
     return bool(words) and words[0] in CONJUNCTIONS
 
 
-def is_merged_grammatical(text: str, nlp) -> bool:
-    """
-    Checks whether the merged text is a grammatically valid sentence,
-    allowing an initial bullet (NFP), but rejecting other structural noise.
-    """
-    try:
-        doc = nlp(text)
-        if not doc.sentences:
-            return False
+# def is_merged_grammatical(text: str, nlp) -> bool:
+#     """
+#     Checks whether the merged text is a grammatically valid sentence,
+#     allowing an initial bullet (NFP), but rejecting other structural noise.
+#     """
+#     try:
+#         doc = nlp(text)
+#         if not doc.sentences:
+#             return False
 
-        for sent in doc.sentences:
-            if not sent.constituency:
-                continue
+#         for sent in doc.sentences:
+#             if not sent.constituency:
+#                 continue
 
-            tree_str = str(sent.constituency).strip()
+#             tree_str = str(sent.constituency).strip()
 
-            # Ensure top-level structure is a sentence
-            if (
-                not tree_str.startswith("(ROOT (S")
-                and not tree_str.startswith("(ROOT (SINV")
-                and not tree_str.startswith("(ROOT (SBAR")
-            ):
-                # If not a sentence root, and sentence is embedded inside a noun phrase, reject
-                if re.search(r"\(NP\s+\(S[\s\)]", tree_str):
-                    return False
+#             # Ensure top-level structure is a sentence
+#             if (
+#                 not tree_str.startswith("(ROOT (S")
+#                 and not tree_str.startswith("(ROOT (SINV")
+#                 and not tree_str.startswith("(ROOT (SBAR")
+#             ):
+#                 # If not a sentence root, and sentence is embedded inside a noun phrase, reject
+#                 if re.search(r"\(NP\s+\(S[\s\)]", tree_str):
+#                     return False
 
-            # ✅ ALLOW: One NFP at very beginning of tree (before any words)
-            # ❌ REJECT: Any NFP/ADD/EMAIL/URL that appears later
-            nfp_index = tree_str.find("NFP")
-            if nfp_index != -1:
-                # Check if it's the very first non-whitespace thing (root allowance)
-                first_occurrence = re.search(r"\(NFP\b", tree_str)
-                if first_occurrence and first_occurrence.start() > 30:  # ROOT + (S ...)
-                    return False  # NFP not at the start
+#             # ✅ ALLOW: One NFP at very beginning of tree (before any words)
+#             # ❌ REJECT: Any NFP/ADD/EMAIL/URL that appears later
+#             nfp_index = tree_str.find("NFP")
+#             if nfp_index != -1:
+#                 # Check if it's the very first non-whitespace thing (root allowance)
+#                 first_occurrence = re.search(r"\(NFP\b", tree_str)
+#                 if first_occurrence and first_occurrence.start() > 30:  # ROOT + (S ...)
+#                     return False  # NFP not at the start
 
-            # Block structural noise elsewhere
-            if any(tag in tree_str for tag in ["ADD", "EMAIL", "URL"]):
-                return False
+#             # Block structural noise elsewhere
+#             if any(tag in tree_str for tag in ["ADD", "EMAIL", "URL"]):
+#                 return False
 
-        return True
+#         return True
 
-    except Exception:
-        return False
-
-
-def should_merge(line_a: str, line_b: str, max_line_length: int, nlp) -> bool:
-    grammaticaly_complete = False
-    if contains_bullet(line_b) or contains_contact_info(line_b):
-        # print("contains_bullet(line_b) or contains_contact_info(line_b):")
-        # print(f"line b {line_b}")
-        return False
-    if contains_contact_info(line_a):
-        print("contains_contact_info)")
-        print(f"line a {line_a}")
-        return False
-    if is_visually_separated(line_a, line_b, max_line_length):
-        print("is_visually_separated")
-        print(f"line a {line_a}")
-        print(f"line b {line_b}")
-        print(f"max length {max_line_length}")
-        return False
-
-    if ends_with_conjunction(line_a) or starts_with_conjunction(line_b):
-        return True
-
-    # if is_merged_grammatical(line_a + " " + line_b, nlp):
-    #     return True
-    # else:
-    #     print(f"not grammatical {line_a} {line_b}")
-
-    return False
+#     except Exception:
+#         return False
 
 
 zsc_pipeline = load_zsc_model()
@@ -468,7 +410,7 @@ def matching_section_header(line: str) -> str | None:
     :param line: The text line to evaluate.
     :return: The canonical label if matched; otherwise, None.
     """
-    headings_json_path = "config/labels.json"
+    headings_json_path = "config/resume_headers.json"
     flat_map = utils.load_flat_labels(headings_json_path)
 
     normalized_line = line.strip().lower()

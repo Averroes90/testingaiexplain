@@ -3,58 +3,132 @@
       {
         "label_type": "SECTION_HEADING",
         "canonical_label": "PROFESSIONAL EXPERIENCE",
-        "synonyms": ["Work Experience", "Career History"]
+        "synonyms": [
+          "Professional Experience",
+          "Work Experience",
+          "Career History",
+          "Employment History",
+          "Experience",
+          "Work Background",
+          "Job History",
+          "Career Summary",
+          "Work Summary",
+          "Professional Background",
+          "Roles and Responsibilities",
+          "Career Overview",
+          "Achievements",
+          "Accomplishments",
+          "Led",
+          "Developed",
+          "Designed",
+          "Managed"
+        ]
       },
       {
         "label_type": "SUB_LABEL",
         "belongs_to": "PROFESSIONAL EXPERIENCE",
-        "canonical_label": "Company Line",
-        "synonyms": ["Employer line", "Org line"]
+        "canonical_label": "COMPANY LINE",
+        "synonyms": [
+          "Employer Line",
+          "Organization Line",
+          "Company Header",
+          "Company Line",
+          "Employer Information",
+          "Workplace Line",
+          "Employment Entry",
+          "Company Heading",
+          "Position Header"
+        ]
       },
       {
         "label_type": "SUB_LABEL",
         "canonical_label": "JOB TITLE",
         "belongs_to": "PROFESSIONAL EXPERIENCE",
-        "synonyms": ["Title", "Position"]
-      },
-      {
-        "label_type": "SUB_LABEL",
-        "belongs_to": "PROFESSIONAL EXPERIENCE",
-        "canonical_label": "Responsibilities",
-        "synonyms": ["Work tasks","accomplishments"]
+        "synonyms": [
+          "Title",
+          "Position",
+          "Role",
+          "Manager",
+          "Analyst",
+          "Engineer",
+          "Specialist",
+          "Consultant",
+          "Coordinator",
+          "Director",
+          "Executive",
+          "Associate",
+          "Intern",
+          "Officer",
+          "Lead",
+          "Administrator",
+          "Supervisor",
+          "Architect",
+          "Developer"
+        ]
       },
       {
         "label_type": "SECTION_HEADING",
         "canonical_label": "TECHNICAL SKILLS",
-        "synonyms": ["Skills", "Tech Skills"]
-      },
-      {
-        "label_type": "SUB_LABEL",
-        "belongs_to": "TECHNICAL SKILLS",
-        "canonical_label": "Programming Languages",
-        "synonyms": ["Coding languages"]
-      },
-      {
-        "label_type": "SUB_LABEL",
-        "belongs_to": "TECHNICAL SKILLS",
-        "canonical_label": "Machine Learning",
-        "synonyms": ["ML Tools", "ML Frameworks"]
-      },      
-      {
-        "label_type": "SECTION_HEADING",
-        "canonical_label": "SUMMARY",
-        "synonyms": [ "Overview","Abrtract","Profile"]
-      },
-      {
-        "label_type": "SUB_LABEL",
-        "belongs_to": "Education",
-        "canonical_label": "School",
-        "synonyms": ["University", "College", "Institution"]
-      },
+        "synonyms": [
+          "Technical Skills",
+          "Skills",
+          "Tech Skills",
+          "Technical Proficiencies",
+          "Technologies",
+          "Programming Languages",
+          "Coding Languages",
+          "Software Skills",
+          "Tools & Technologies",
+          "Development Tools",
+          "Frameworks & Libraries",
+          "Technical Expertise",
+          "Languages & Frameworks",
+          "Systems & Platforms",
+          "Technical Stack"
+        ]
+      },    
       {
         "label_type": "SECTION_HEADING",
-        "canonical_label": "Education",
-        "synonyms": ["Academics", "Educational Background", "Studies"]
+        "canonical_label": "EDUCATION",
+        "synonyms": [
+          "University",
+          "College",
+          "Institution",
+          "School",
+          "Academics",
+          "Faculty",
+          "Graduate School",
+          "Undergraduate School",
+          "Institute of Technology",
+          "Business School",
+          "Law School",
+          "Medical School",
+          "Educational Institution",
+          "Certificate"
+        ]
+      },
+      {
+        "label_type": "SUB_LABEL",
+        "canonical_label": "CONTACT INFO",
+        "belongs_to": "PERSONAL INFORMATION",
+        "synonyms": [
+          "Contact",
+          "Contact Information",
+          "Address",
+          "Email",
+          "Phone",
+          "Telephone",
+          "Mobile",
+          "Cell",
+          "Website",
+          "LinkedIn",
+          "GitHub",
+          "Location",
+          "City",
+          "Country",
+          "Zip",
+          "Postal Code"
+        ]
       }
     ]
   }
