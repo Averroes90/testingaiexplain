@@ -34,9 +34,9 @@ def parse_into_lines(resume_text: str) -> list[str]:
     #  - "Page 1 of 2"
     #  - "Some text Page   2  of   5 something"
     #  - "Page  of 12"
-    print("\n----- START OF CHUNK -----")
-    print(resume_text)
-    print("------ END OF CHUNK ------\n")
+    # print("\n----- START OF CHUNK -----")
+    # print(resume_text)
+    # print("------ END OF CHUNK ------\n")
     header_footer_pattern = re.compile(r"(?i).*page.*of.*\d+.*")
 
     def is_header_or_footer(line: str) -> bool:

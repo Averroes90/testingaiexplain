@@ -197,7 +197,7 @@ def extract_ner(line: dict):
       - 'count_per': Count of person entities.
     """
     ner_list = line.get("named_entity_recognition", [])
-    counts = {"count_org": 0, "count_loc": 0, "count_per": 0}
+    counts = {"count_org": 0, "count_loc": 0, "count_per": 0, "count_misc": 0}
     for entity in ner_list:
         entity_label = entity.get("label", "").upper()
         if entity_label == "ORG":
@@ -206,6 +206,8 @@ def extract_ner(line: dict):
             counts["count_loc"] += 1
         elif entity_label == "PER":
             counts["count_per"] += 1
+        elif entity_label == "MISC":
+            counts["count_misc"] += 1
     return counts
 
 
@@ -220,7 +222,7 @@ def extract_formatting(line: dict) -> dict:
     """
     return {
         "is_visually_separated": 1 if line.get("is_visually_separated", False) else 0,
-        "contains_bullet": 1 if line.get("contains_bullet", False) else 0,
+        # "contains_bullet": 1 if line.get("contains_bullet", False) else 0,
         "contains_contact_info": 1 if line.get("contains_contact_info", False) else 0,
     }
 

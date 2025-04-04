@@ -20,7 +20,7 @@ def read_pdf(file_path):
         reader = pypdf.PdfReader(f)
         for page in reader.pages:
             page_text = page.extract_text(
-                extraction_mode="layout", layout_mode_space_vertically=True
+                extraction_mode="layout", layout_mode_scale_weight=0.1
             )
             if page_text:
                 text.append(page_text)
