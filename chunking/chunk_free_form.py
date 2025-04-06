@@ -218,11 +218,13 @@ def merge_sentences_leiden(
 
     # Compute optimal resolution
     resolution = compute_dynamic_resolution(n, T, S_avg)
-    print(f"resolution: {resolution}")
+    # for debugging
+    # print(f"resolution: {resolution}")
 
     # Build similarity graph
     graph = build_similarity_graph(sentences, embeddings, threshold)
-    debug_display_graph(graph, embeddings, sentences, threshold=threshold)
+    # for debugging
+    # debug_display_graph(graph, embeddings, sentences, threshold=threshold)
 
     # Run Leiden clustering
     clusters = apply_leiden_clustering(graph, resolution)
@@ -248,9 +250,11 @@ def merge_sentences_leiden(
                     current_chunk += " " + sent
             if current_chunk:
                 split_chunks.append(current_chunk.strip())
-            merged_chunks.extend([f"[MERGED] {chunk}" for chunk in split_chunks])
+            # merged_chunks.extend([f"[MERGED] {chunk}" for chunk in split_chunks]) # for debugging
+            merged_chunks.extend([chunk for chunk in split_chunks])
         else:
-            merged_chunks.append(f"[MERGED] {merged_text}")
+            # merged_chunks.append(f"[MERGED] {merged_text}") #for debugging
+            merged_chunks.append(merged_text)
 
     # Include sentences that were not clustered
     all_indices = set(range(len(sentences)))
@@ -259,8 +263,9 @@ def merge_sentences_leiden(
 
     for idx in unclustered_indices:
         merged_chunks.append(
-            f"[SINGLE] {sentences[idx]}"
-        )  # Tagging standalone entries for clarity
+            # f"[SINGLE] {sentences[idx]}" #tagged for debugging
+            sentences[idx]
+        )
     return merged_chunks
 
 
@@ -299,10 +304,10 @@ def compute_dynamic_threshold(
     # Clamp
     threshold = max(lower_bound, min(raw_threshold, upper_bound))
 
-    print(f"\n=== compute_dynamic_threshold Debug ===")
-    print(f"Percentile : {percentile}")
-    print(f"Raw        : {raw_threshold:.4f}")
-    print(f"Clamped    : {threshold:.4f}")
-    print("=======================================\n")
+    # print(f"\n=== compute_dynamic_threshold Debug ===")
+    # print(f"Percentile : {percentile}")
+    # print(f"Raw        : {raw_threshold:.4f}")
+    # print(f"Clamped    : {threshold:.4f}")
+    # print("=======================================\n")
 
     return threshold

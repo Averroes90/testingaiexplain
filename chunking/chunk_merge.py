@@ -24,10 +24,10 @@ def merge_line_chunks(lines_with_features: list[dict], nlp=nlp) -> list[str]:
         while j < n:
             prev_line = lines_with_features[j - 1]
             next_line = lines_with_features[j]
-            print(f"i is {i}")
-            print(f"prev. line {prev_line}")
-            print(f"next line {next_line}")
-            print(f"current chunk {current_chunk_lines}")
+            # print(f"i is {i}")
+            # print(f"prev. line {prev_line}")
+            # print(f"next line {next_line}")
+            # print(f"current chunk {current_chunk_lines}")
 
             # Check rules in order of priority
 

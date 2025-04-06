@@ -109,48 +109,47 @@ def parse_contact_info(parsed_lines):
             del parsed_lines[i]
         else:
             i += 1
-
-    return contact_info_lines, parsed_lines
+    contact_string = "\n".join(contact_info_lines)
+    return contact_string, parsed_lines
 
 
 def get_section_by_header(header_label, parsed_lines):
     """
     A helper that finds a given header_label in parsed_lines (via is_section_header),
-    returns all lines from that header until the next different header is encountered
-    (or end of list). Those lines are removed from parsed_lines.
+    returns all lines (excluding the header line) from that header until the next different
+    header is encountered (or end of list) as a single string with newlines separating lines.
+    Those lines are removed from parsed_lines.
 
     :param header_label: String, e.g. "TECHNICAL SKILLS", "PROFESSIONAL EXPERIENCE"
     :param parsed_lines: The list of parsed line dictionaries
-    :return: (lines_for_section, updated_parsed_lines)
+    :return: (section_string, updated_parsed_lines)
     """
-    lines_for_section = []
+    section_lines = []
     i = 0
 
     while i < len(parsed_lines):
         line = parsed_lines[i]
         if line.get("is_section_header") == header_label:
-            # This is the start of the desired section
-            lines_for_section.append(line["line"])
+            # Found the header; remove it and skip adding it to the output.
             del parsed_lines[i]
 
-            # Now capture subsequent lines until we reach a new/different section header
+            # Now capture subsequent lines until we reach a new/different section header.
             while i < len(parsed_lines):
                 next_line = parsed_lines[i]
                 next_header = next_line.get("is_section_header")
-
-                # Stop if we encounter a new header that isn't the same
                 if next_header is not None and next_header != header_label:
                     break
 
-                lines_for_section.append(next_line["line"])
+                section_lines.append(next_line["line"])
                 del parsed_lines[i]
 
-            # Since we only want the first matching header section, break out
+            # Only process the first matching section header.
             break
         else:
             i += 1
 
-    return lines_for_section, parsed_lines
+    section_string = "\n".join(section_lines)
+    return section_string, parsed_lines
 
 
 def parse_technical_skills(parsed_lines):
@@ -287,4 +286,5 @@ def parse_other_sections(parsed_lines):
     :param parsed_lines: List of line dictionaries that have not been parsed by other functions.
     :return: A list of plain text strings representing the remaining lines.
     """
-    return [line["line"] for line in parsed_lines]
+    other_string = "\n".join([line["line"] for line in parsed_lines])
+    return other_string
