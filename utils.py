@@ -184,3 +184,21 @@ def load_object_from_pickle(file_path: str) -> any:
     """Load transcription object from a pickle file."""
     with open(file_path, "rb") as f:
         return pickle.load(f)
+
+
+def build_synonyms_map(flat_map: dict[str, dict]) -> dict[str, list[str]]:
+    """
+    Groups all known surface forms (canonical label + synonyms)
+    under their canonical label keys.
+    """
+    synonyms_map = {}
+    for text_lower, label_info in flat_map.items():
+        canonical_label = label_info["canonical_label"]
+        if canonical_label not in synonyms_map:
+            synonyms_map[canonical_label] = set()  # use a set to avoid duplicates
+        synonyms_map[canonical_label].add(
+            text_lower
+        )  # text_lower is either the c-label or a synonym
+
+    # Convert sets to lists
+    return {k: list(v) for k, v in synonyms_map.items()}

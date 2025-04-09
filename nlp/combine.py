@@ -46,50 +46,6 @@ def process_dataframe(data_df):
     return parsed_resumes, parsed_essays
 
 
-def create_resumes_csv(parsed_resumes, directory):
-    # Ensure the target directory exists
-    os.makedirs(directory, exist_ok=True)
-    csv_file_path = os.path.join(directory, "resumes.csv")
-
-    # Build a list of rows. For each resume, add the id as a new key.
-    rows = []
-    all_keys = set()
-    for resume_id, resume_data in parsed_resumes.items():
-        # Create a new dictionary that includes the resume id as "id"
-        row_dict = {"id": resume_id}
-        row_dict.update(resume_data)
-        rows.append(row_dict)
-        all_keys.update(row_dict.keys())
-
-    # Ensure "id" is the first column
-    all_keys = list(all_keys)
-    if "id" in all_keys:
-        all_keys.remove("id")
-        all_keys = ["id"] + sorted(all_keys)
-    else:
-        all_keys = sorted(all_keys)
-
-    with open(csv_file_path, mode="w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=all_keys)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-
-
-def create_essays_csv(parsed_essays, directory):
-    # Ensure the target directory exists
-    os.makedirs(directory, exist_ok=True)
-    csv_file_path = os.path.join(directory, "essays.csv")
-
-    # Write the data to the CSV file with header "id" and "content"
-    with open(csv_file_path, mode="w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["id", "content"])
-        for essay_id, contents in parsed_essays.items():
-            for content in contents:
-                writer.writerow([essay_id, content])
-
-
 def create_combined_csv(parsed_resumes, parsed_essays, directory):
     # Ensure the target directory exists
     os.makedirs(directory, exist_ok=True)
