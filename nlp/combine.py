@@ -69,3 +69,45 @@ def create_combined_csv(parsed_resumes, parsed_essays, directory):
                 writer.writerow(
                     {"id": doc_id, "category": "free-form", "content": content}
                 )
+
+
+def create_resume_csv(parsed_resumes, directory):
+    """
+    Creates a CSV file containing only resume data.
+
+    Each key in parsed_resumes is a document ID.
+    Each value is a dict with key-value pairs to be stored in the CSV.
+    """
+    os.makedirs(directory, exist_ok=True)
+    csv_file_path = os.path.join(directory, "resumes.csv")
+
+    with open(csv_file_path, mode="w", newline="", encoding="utf-8") as csvfile:
+        fieldnames = ["id", "category", "content"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for doc_id, resume_data in parsed_resumes.items():
+            for key, value in resume_data.items():
+                writer.writerow({"id": doc_id, "category": key, "content": value})
+
+
+def create_essay_csv(parsed_essays, directory):
+    """
+    Creates a CSV file containing only essay data.
+
+    Each key in parsed_essays is a document ID.
+    Each value is a list of essay text chunks.
+    """
+    os.makedirs(directory, exist_ok=True)
+    csv_file_path = os.path.join(directory, "essays.csv")
+
+    with open(csv_file_path, mode="w", newline="", encoding="utf-8") as csvfile:
+        fieldnames = ["id", "category", "content"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for doc_id, essay_contents in parsed_essays.items():
+            for content in essay_contents:
+                writer.writerow(
+                    {"id": doc_id, "category": "free-form", "content": content}
+                )
