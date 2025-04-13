@@ -5,6 +5,7 @@ import PyPDF2
 import docx
 import pypdf
 import pickle
+from utils.config_loader import load_config
 
 
 def read_txt(file_path):
@@ -146,7 +147,7 @@ def load_flat_labels(json_path: str) -> dict[str, dict]:
     """
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
-
+    data = load_config(json_path)
     flat_map: dict[str, dict] = {}
 
     for entry in data["labels"]:
