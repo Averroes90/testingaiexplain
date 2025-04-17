@@ -1,5 +1,5 @@
 import re
-import utils
+import utils.utils as utils
 from nlp.zsc import classify_line_zsc, load_zsc_model
 from nlp.ner import extract_ner, load_ner_model
 

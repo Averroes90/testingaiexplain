@@ -145,8 +145,8 @@ def load_flat_labels(json_path: str) -> dict[str, dict]:
     :param json_path: Path to your flattened JSON file (e.g., headings_and_sublabels.json).
     :return: A dict where keys are synonyms (lowercase), and values are dictionaries with metadata.
     """
-    with open(json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    # with open(json_path, "r", encoding="utf-8") as f:
+    #     data = json.load(f)
     data = load_config(json_path)
     flat_map: dict[str, dict] = {}
 

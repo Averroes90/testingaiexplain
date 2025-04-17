@@ -1,7 +1,7 @@
 # File: resume_parser_project/nlp/zsc.py
 
 from transformers import pipeline
-import utils
+import utils.utils as utils
 from collections import defaultdict
 
 
