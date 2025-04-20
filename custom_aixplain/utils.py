@@ -1,12 +1,15 @@
 import os
 import requests
 from dotenv import load_dotenv
+import ast
 
 # Load the .env file
 load_dotenv()
 
 
-def search_data(text: str, category: str, operator: str, model_id: str, top_k: int = 3):
+def search_data(
+    text: str, model_id: str, category: str = None, operator: str = None, top_k: int = 3
+):
     """
     Search the index based on the given category filter.
     """
@@ -42,3 +45,13 @@ def search_data(text: str, category: str, operator: str, model_id: str, top_k: i
         json=payload,
     )
     return response
+
+
+def process_JSON_api_response(api_response):
+    # Just get the full string — no [0]    api_response = api_response.data
+    # Parse it safely
+    return ast.literal_eval(api_response.data)
+
+
+def process_standard_api_output(api_response):
+    return api_response.data.output

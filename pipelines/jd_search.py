@@ -3,11 +3,12 @@ from utils.config_loader import load_config
 import json
 
 
-def search_background(job_description: str) -> dict:
+def search_background_first_pass(job_info: dict) -> dict:
     config = load_config()
     resume_model_id = config["resume_model_id"]
     essay_model_id = config["essay_model_id"]
 
+    job_description = job_info["summary"]
     # Professional Experience
     result = search_data(
         f"search the data base containing my resume info for entries that most align with this job description:{job_description} ",
@@ -21,7 +22,7 @@ def search_background(job_description: str) -> dict:
     # Education
     result = search_data(
         f"search the data base containing my resume info for entries that most align with this job description:{job_description} ",
-        "education",
+        category="education",
         operator="==",
         model_id=resume_model_id,
         top_k=1,
@@ -31,7 +32,7 @@ def search_background(job_description: str) -> dict:
     # Other Resume Entries
     result = search_data(
         f"search the data base containing my resume info for entries that most align with this job description:{job_description} ",
-        ["professional_experience", "education"],
+        category=["professional_experience", "education"],
         operator="not in",
         model_id=resume_model_id,
     )
@@ -40,7 +41,7 @@ def search_background(job_description: str) -> dict:
     # Essays
     result = search_data(
         f"search the data base for entries that most align with this job description:{job_description} ",
-        "free-form",
+        category="free-form",
         operator="==",
         model_id=essay_model_id,
         top_k=5,
@@ -52,4 +53,31 @@ def search_background(job_description: str) -> dict:
         "education": education,
         "other_resume": other_resume,
         "essays": essays,
+    }
+
+
+def get_relevant_background_info(user_query: str) -> dict:
+    config = load_config()
+    resume_model_id = config["resume_model_id"]
+    essay_model_id = config["essay_model_id"]
+
+    # structured
+    result = search_data(
+        f"search the data base containing my resume info for entries that most align with this: {user_query} ",
+        model_id=resume_model_id,
+        top_k=2,
+    )
+    structured = [item["data"] for item in result.json()["details"]]
+
+    result = search_data(
+        f"search the data base for entries that most align with this: {user_query} ",
+        "free-form",
+        operator="==",
+        model_id=essay_model_id,
+        top_k=2,
+    )
+    free_form = [item["data"] for item in result.json()["details"]]
+    return {
+        "structured": structured,
+        "free_form": free_form,
     }
