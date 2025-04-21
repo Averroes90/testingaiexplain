@@ -30,7 +30,7 @@
             "name": "formatter",
             "agent": "formatter_agent",
             "inputs": ["doc_type", "raw_text", "style", "page_count"],
-            "query": "Format this new {doc_type} text in {raw_text} using {style} style, aiming for {page_count} A4 pages. Return valid HTML only, with professional headings and bullet points.",
+            "query": "Format this new {doc_type} text in {raw_text} using {style} style, aiming for {page_count} A4 pages. Return valid HTML only, with professional headings and bullet points. contact info and address on one line",
             "output_process":"process_standard_api_output",
             "return":"formatted_text"
           }
