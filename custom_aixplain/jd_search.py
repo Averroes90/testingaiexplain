@@ -1,6 +1,7 @@
 from custom_aixplain.utils import search_data
 from utils.config_loader import load_config
 import json
+from utils.credits_tracker import log_usage
 
 
 def search_background_first_pass(job_info: dict) -> dict:
@@ -17,8 +18,8 @@ def search_background_first_pass(job_info: dict) -> dict:
         model_id=resume_model_id,
         top_k=1,
     )
-    professional_experience = result.json()["data"]
 
+    professional_experience = result.json()["data"]
     # Education
     result = search_data(
         f"search the data base containing my resume info for entries that most align with this job description:{job_description} ",
@@ -27,6 +28,7 @@ def search_background_first_pass(job_info: dict) -> dict:
         model_id=resume_model_id,
         top_k=1,
     )
+
     education = result.json()["data"]
 
     # Other Resume Entries
@@ -36,6 +38,7 @@ def search_background_first_pass(job_info: dict) -> dict:
         operator="not in",
         model_id=resume_model_id,
     )
+
     other_resume = [item["data"] for item in result.json()["details"]]
 
     # Essays
@@ -46,6 +49,7 @@ def search_background_first_pass(job_info: dict) -> dict:
         model_id=essay_model_id,
         top_k=5,
     )
+
     essays = [item["data"] for item in result.json()["details"]]
 
     return {
