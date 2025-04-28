@@ -45,7 +45,7 @@ You can:
 
 Respect page_count when deciding how much detail to include. If current_text is provided, preserve it but integrate new info or changes. Return plain text or minimal JSON only—no extra commentary.
 
-For 'resume', keep it concise and relevant.  
+For 'resume', keep it concise and relevant, with all the contact information on one line, do not include a top title.  
 For 'cover_letter', address the company/role and highlight key qualifications.
 """,
     tools=[AgentFactory.create_model_tool(model="6646261c6eb563165658bbb1")],  # gpt-4o

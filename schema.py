@@ -1,38 +1,36 @@
-from aixplain.enums import DataType, Language, License, StorageType
-from aixplain.factories import CorpusFactory
-from aixplain.modules import MetaData
+# backend/models/writer_output.py  (Pydantic v2)
 
-# One MetaData object per CSV column you want to register
-id_meta = MetaData(
-    name="id",  # Must match the column name in your CSV
-    dtype=DataType.TEXT,
-    storage_type=StorageType.TEXT,
-    languages=[Language.English_UNITED_STATES],
-)
+from enum import Enum
+from pydantic import BaseModel, Field, field_validator
 
-content_meta = MetaData(
-    name="content",  # Must match the 'content' column from your CSV
-    dtype=DataType.TEXT,
-    storage_type=StorageType.TEXT,
-    languages=[Language.English_UNITED_STATES],
-)
 
-doc_type_meta = MetaData(
-    name="doc_type",  # Matches the 'doc_type' column in your CSV
-    dtype=DataType.TEXT,
-    storage_type=StorageType.TEXT,
-    languages=[Language.English_UNITED_STATES],
-)
+class DocType(str, Enum):
+    resume = "resume"
+    cover_letter = "cover_letter"
 
-created_date_meta = MetaData(
-    name="created_date",  # Matches the 'created_date' column
-    dtype=DataType.TEXT,  # Dates can be stored as TEXT if there’s no date type
-    storage_type=StorageType.TEXT,
-    languages=[Language.English_UNITED_STATES],
-)
 
-# Combine them into a list
-schema = [id_meta, content_meta, doc_type_meta, created_date_meta]
+class Meta(BaseModel):
+    title: str = Field(..., min_length=3, max_length=120)
+    doc_type: DocType
+    style: str = Field(..., min_length=3, max_length=30)
+    page_count: int = Field(..., gt=0, lt=5)
 
-# Then, you'd pass this `schema` alongside your CSV to the SDK,
-# similar to how the audio example does it, but specifying DataType.TEXT.
+
+class WriterOutput(BaseModel):
+    meta: Meta
+    content: str = Field(..., max_length=40_000)
+
+    # ── v2-style validator ────────────────────────────────
+    @field_validator("content")
+    def ensure_markdown(cls, v: str) -> str:
+        if "<" in v and ">" in v:
+            raise ValueError("HTML tags are not allowed; use Markdown only.")
+        return v
+
+
+# 1) Define a Pydantic model that matches the expected input payload
+class GenerateRequest(BaseModel):
+    url: str
+    doc_type: list[str]
+    style: list[str]
+    page_count: list[str]
