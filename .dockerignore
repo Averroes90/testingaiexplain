@@ -1,0 +1,19 @@
+# VCS & tooling
+.git
+.gitignore
+.vscode
+.idea
+#referenced in compose.yml
+.env 
+# Python artifact folders
+__pycache__/
+*.py[cod]
+*.log
+
+# Tests, docs, notebooks
+tests/
+docs/
+*.ipynb
+
+# OS junk
+.DS_Store..

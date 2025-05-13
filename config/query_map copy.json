@@ -1,0 +1,82 @@
+{
+    "pipelines": {
+      "first_pass": {
+        "steps": [
+          {
+            "name": "scraper",
+            "function": "scrape_job_info",
+            "inputs": ["url"],
+            "query": "",
+            "output_process":"process_JSON_api_response",
+            "return":"job_info"
+          },
+          {
+            "name": "search_background_first_pass",
+            "function": "search_background_first_pass",
+            "inputs": ["job_info"],
+            "query": "",
+            "output_process":"",
+            "return":"background_info"
+          },
+          {
+            "name": "writer",
+            "agent": "writer_agent",
+            "inputs": ["doc_type", "job_info", "background_info","page_count"],
+            "query": "Generate a {doc_type} referencing {job_info}' and {background_info} with page count {page_count}. Return plain text or minimal JSON.",
+            "output_process":"process_standard_api_output",
+            "return":"raw_text"
+          },
+          {
+            "name": "formatter",
+            "agent": "formatter_agent",
+            "inputs": ["doc_type", "raw_text", "style", "page_count"],
+            "query": "Format this new {doc_type} text in {raw_text} using {style} style, aiming for {page_count} A4 pages. Return valid HTML only, with professional headings and bullet points. contact info and address on one line",
+            "output_process":"process_standard_api_output",
+            "return":"formatted_text"
+          }
+        ]
+      },
+      "second_pass": {
+        "decision_layer": {
+          "routes": {
+            "format_only": [
+                {
+                    "name": "formatter",
+                    "agent": "formatter_agent",
+                    "inputs": ["doc_type", "existing_formatted_html", "page_count", "user_request"],
+                    "query": "We have existing {doc_type} HTML:\n{existing_formatted_html}\n\nThe user requests style changes: {user_request}\nkeep it to {page_count} A4 pages. Return only final HTML.",
+                    "output_process":"process_standard_api_output",
+                    "return":"formatted_text"
+                  }
+            ],
+            "content_change": [
+              {
+                "name": "get_relevant_background_info",
+                "function": "get_relevant_background_info",
+                "inputs": ["user_requested_content"],
+                "query": "",
+                "output_process":"",
+                "return":"new_background_snippet"
+              },
+              {
+                "name": "writer",
+                "agent": "writer_agent",
+                "inputs": ["doc_type", "current_text", "new_background_snippet", "user_request","page_count"],
+                "query": "Current {doc_type}:\n{current_text}\n\nOptional new info:\n{new_background_snippet}\n\nUser request:\n{user_request}\n\npage count:\n{page_count}\n\nPlease update the {doc_type}, preserving existing content and incorporating any new info above if relevant. Return only the revised text.",
+                "output_process":"process_standard_api_output",
+                "return":"raw_text"
+              },
+              {
+                "name": "formatter",
+                "agent": "formatter_agent",
+                "inputs": ["doc_type", "existing_formatted_html", "raw_text", "page_count", "user_request"],
+                "query": "We have existing {doc_type} HTML:\n{existing_formatted_html}\n\nNew/updated text:\n{raw_text}\n\nUser request: {user_request}\nkeep it  within {page_count} pages, merging existing formatting if relevant. Return final HTML.",
+                "output_process":"process_standard_api_output",
+                "return":"formatted_text"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }

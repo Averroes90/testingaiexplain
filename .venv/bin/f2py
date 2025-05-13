@@ -1,4 +1,4 @@
-#!/Users/ramiibrahimi/Documents/testingaiexplain/.venv/bin/python3.12
+#!/Users/ramiibrahimi/Documents/Rezome/backend/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

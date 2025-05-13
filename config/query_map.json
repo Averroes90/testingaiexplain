@@ -22,7 +22,7 @@
             "name": "writer",
             "agent": "writer_agent",
             "inputs": ["doc_type", "job_info", "background_info","page_count"],
-            "query": "Generate a {doc_type} referencing {job_info}' and {background_info} with page count {page_count}. Return plain text or minimal JSON.",
+            "query": "Generate a {doc_type} that fits {page_count} A-4 pages. Job: {job_info_short} Background: {background_info_short} Return only Markdown with the YAML front-matter specified in the system prompt—no code fences, no commentary.",
             "output_process":"process_standard_api_output",
             "return":"raw_text"
           },

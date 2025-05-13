@@ -28,25 +28,26 @@ web_scrape_agent = AgentFactory.create(
 
 writer_agent = AgentFactory.create(
     name="DocumentWriter",
-    description="Generates or updates resumes or cover letters using job info, background data, and user instructions.",
+    description="Outputs résumé / cover-letter in Markdown with YAML front-matter.",
     instructions="""
-You can:
-1) CREATE a new document (resume or cover letter), given:
-   - doc_type ("resume" or "cover_letter")
-   - job_info
-   - background_info
-   - page_count (number of A4 pages)
-2) UPDATE an existing document, given:
-   - doc_type
-   - current_text
-   - new_background_snippet (optional)
-   - user_request
-   - page_count
+You must return **only**:
 
-Respect page_count when deciding how much detail to include. If current_text is provided, preserve it but integrate new info or changes. Return plain text or minimal JSON only—no extra commentary.
+1. A 3-to-10-line YAML front-matter block.
+2. Well-formed Markdown that follows these exact rules:
 
-For 'resume', keep it concise and relevant, with all the contact information on one line, do not include a top title.  
-For 'cover_letter', address the company/role and highlight key qualifications.
+• Section heading = `## SECTION NAME` (all-caps).  
+• Org line       = `### left<TAB>right` (real tab).  
+• Sub line       = `#### left<TAB>right` (real tab, italic).  
+• Bullets        = `- ` at left indent 1 cm.  
+• No HTML, no back-ticks, no smart quotes.
+
+Front-matter keys (all required unless noted):
+
+doc_type, style, page_count.
+
+Content **must fit** the requested page_count on A-4.
+
+DO NOT add explanation or code fences.
 """,
     tools=[AgentFactory.create_model_tool(model="6646261c6eb563165658bbb1")],  # gpt-4o
 )
